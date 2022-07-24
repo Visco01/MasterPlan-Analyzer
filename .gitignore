@@ -1,0 +1,12 @@
+*.csv
+*.numbers
+
+# Backup files
+*~
+
+# Undo-tree save-files
+*.~undo-tree
+
+# macOS Stuff
+*.DS_Store
+.DS_Store
