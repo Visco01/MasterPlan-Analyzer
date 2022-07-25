@@ -8,32 +8,35 @@ class CSVParser
     @cols = 15
   end
 
-  def find_csv(file_name)
-    File.exist?(file_name)
-  end
+  def get_total_lines
+    begin
+      file = File.open(@file_name)
+    rescue
+      puts "File #{@file_name} not found."
+      exit(false)
+    end
 
-  def get_total_lines(file_name)
-    file = File.open(file_name)
     counter = 0
     file.each do |line|
       counter += 1
     end
+    
     counter
   end
 
   def prettify_line(line)
+    line.force_encoding('utf-8')
     splitted_line = line.split(';')
     splitted_line.delete_at(0)
 
     if splitted_line.any?
 
-      last_element = splitted_line[splitted_line.length - 1]
+      last_element = splitted_line[-1]
 
       if last_element == "\r\n"
-        splitted_line[splitted_line.length - 1] = ""
+        splitted_line[-1] = ""
       else
-        end_of_last_element = last_element.length - 3
-        splitted_line[splitted_line.length - 1] = last_element[0..end_of_last_element]
+        splitted_line[-1] = last_element[0..-3]
       end
     end
 
@@ -41,8 +44,14 @@ class CSVParser
   end
 
   def get_last_week
-    file = File.open(@file_name)
-    total_lines = get_total_lines(@file_name)
+    begin
+      file = File.open(@file_name)
+    rescue
+      puts "File #{@file_name} not found."
+      exit(false)
+    end
+
+    total_lines = get_total_lines
     file_counter = 0
     line_counter = 0
 
@@ -50,6 +59,7 @@ class CSVParser
 
     file.each do |line|
       if file_counter >= total_lines - @rows + 1 and file_counter <= total_lines
+
         splitted_line = prettify_line(line)
 
         day_counter = 0
@@ -73,4 +83,3 @@ class CSVParser
   end
 
 end
-
