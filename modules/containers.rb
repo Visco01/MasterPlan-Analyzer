@@ -10,10 +10,11 @@ class DayContainer
 end
 
 class WeekContainer
-  attr_accessor :days
+  attr_accessor :days, :timetables
 
   def initialize
     @days = []
+    @timetables = []
     @size = 7
 
     for i in 0..@size - 1

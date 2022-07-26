@@ -16,11 +16,11 @@ class MasterPlan
     week = @weeks[0]
     day_counter = 0
 
-    puts "Weekly Report\n\n"
-    puts "---------------------------"
+    puts "\n           Weekly Report\n\n"
+    puts "----------------------------------------"
     week.days.each do |day|
-      puts "          #{@days[day_counter]}\n\n"
-      puts "    DONE          TASK\n"
+      puts "              #{@days[day_counter]}\n\n"
+      puts "TIMETABLES     DONE          TASK\n"
 
       for i in 0..day.activities.length
         if day.activities[i].instance_of? String and not day.activities[i].empty?
@@ -31,11 +31,11 @@ class MasterPlan
             check = "V"
           end
 
-          puts "     #{check}          #{day.activities[i]}"
+          puts "   #{week.timetables[i]}         #{check}          #{day.activities[i]}"
         end
       end
 
-      puts "---------------------------"
+      puts "----------------------------------------"
       day_counter += 1
     end
   end

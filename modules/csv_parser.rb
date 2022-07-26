@@ -20,16 +20,15 @@ class CSVParser
     file.each do |line|
       counter += 1
     end
-    
+
     counter
   end
 
   def prettify_line(line)
     line.force_encoding('utf-8')
     splitted_line = line.split(';')
-    splitted_line.delete_at(0)
 
-    if splitted_line.any?
+    if splitted_line.any? and splitted_line[0] != splitted_line[-1]
 
       last_element = splitted_line[-1]
 
@@ -58,6 +57,7 @@ class CSVParser
     week = WeekContainer.new
 
     file.each do |line|
+
       if file_counter >= total_lines - @rows + 1 and file_counter <= total_lines
 
         splitted_line = prettify_line(line)
@@ -65,13 +65,24 @@ class CSVParser
         day_counter = 0
         i = 0
 
-        until i >= splitted_line.length - 1 do
+        if splitted_line.length > 1
 
-          week.days[day_counter].checks[line_counter] = splitted_line[i]
-          week.days[day_counter].activities[line_counter] = splitted_line[i + 1]
+          until i >= splitted_line.length - 1 do
 
-          day_counter += 1
-          i += 2
+            week.timetables[line_counter] = splitted_line[0]
+            week.days[day_counter].checks[line_counter] = splitted_line[i + 1]
+            week.days[day_counter].activities[line_counter] = splitted_line[i + 2]
+
+            day_counter += 1
+            i += 2
+          end
+
+        else
+          week.timetables[line_counter] = splitted_line[0]
+        end
+
+        if week.timetables[line_counter].length == 4
+          week.timetables[line_counter] += " "
         end
 
         line_counter += 1
