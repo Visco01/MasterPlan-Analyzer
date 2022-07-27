@@ -14,6 +14,7 @@ class MasterPlan
 
   def print_last_week
     week = @weeks[0]
+    calc_days_percentage(week)
     day_counter = 0
 
     puts "\n           Weekly Report\n\n"
@@ -35,9 +36,36 @@ class MasterPlan
         end
       end
 
+      puts "\nTASKS COMPLETED THIS DAY: #{week.percentages[day_counter]}%"
+
       puts "----------------------------------------"
       day_counter += 1
     end
+
+    puts "\nTASKS COMPLETED THIS WEEK: #{week.total_percentage}%"
+  end
+
+  def calc_days_percentage(week)
+    sum_percentages = 0
+
+    week.days.each do |day|
+
+      n_checks = day.checks.count('V')
+      null_activities = day.activities.count("")
+      total_activities = day.activities.count
+      n_activities = total_activities - null_activities
+
+      begin
+        percentage = (100 * n_checks) / n_activities
+      rescue ZeroDivisionError
+        percentage = 0
+      end
+
+      week.percentages.push(percentage)
+      sum_percentages += percentage
+    end
+
+    week.total_percentage = sum_percentages / 7
   end
 
 end
