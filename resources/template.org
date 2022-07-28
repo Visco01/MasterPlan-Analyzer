@@ -1,0 +1,63 @@
+#+title: Weekly Report
+
+* Monday
+
+| Timetables | Tasks | Done |
+
+#+begin_quote
+Tasks completed:
+#+end_quote
+
+
+* Tuesday
+
+| Timetables | Tasks | Done |
+
+#+begin_quote
+Tasks completed:
+#+end_quote
+
+* Wednesday
+
+| Timetables | Tasks | Done |
+
+#+begin_quote
+Tasks completed:
+#+end_quote
+
+* Thursday
+
+| Timetables | Tasks | Done |
+
+#+begin_quote
+Tasks completed:
+#+end_quote
+
+* Friday
+
+| Timetables | Tasks | Done |
+
+#+begin_quote
+Tasks completed:
+#+end_quote
+
+* Saturday
+
+| Timetables | Tasks | Done |
+
+#+begin_quote
+Tasks completed:
+#+end_quote
+
+* Sunday
+
+| Timetables | Tasks | Done |
+
+#+begin_quote
+Tasks completed:
+#+end_quote
+
+
+#+begin_quote
+This week you completed of your tasks! Keep on keeping on!
+#+end_quote
