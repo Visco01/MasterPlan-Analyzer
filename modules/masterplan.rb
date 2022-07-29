@@ -68,4 +68,21 @@ class MasterPlan
     week.total_percentage = sum_percentages / 7
   end
 
+  def weekly_report_export_to_html
+    week = @weeks[0]
+
+    if not week.instance_of? WeekContainer
+      puts "Week object is empty"
+      exit(false)
+    end
+
+    weekly_report_export_to_html_aux(week)
+  end
+
+  private
+
+  def weekly_report_export_to_html_aux(week)
+    #to implement
+  end
+
 end
