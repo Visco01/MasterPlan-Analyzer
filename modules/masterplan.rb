@@ -1,6 +1,11 @@
 require_relative "csv_parser"
+require_relative "html_template"
+require "test/unit/assertions"
+require "enumerator"
 
 class MasterPlan
+  include Test::Unit::Assertions
+
   def initialize
     @parser = CSVParser.new
     @weeks = []
@@ -71,18 +76,65 @@ class MasterPlan
   def weekly_report_export_to_html
     week = @weeks[0]
 
-    if not week.instance_of? WeekContainer
-      puts "Week object is empty"
+    begin
+      assert((not week.nil?), "weekly_report_export_to_html: week object is nil. firstly you need to call load method")
+    rescue Test::Unit::AssertionFailedError => exception
+      puts "#{exception.message}"
       exit(false)
     end
 
-    weekly_report_export_to_html_aux(week)
+    html_string = weekly_report_export_to_html_aux(week)
+
+    write_html_file(html_string)
   end
 
   private
 
   def weekly_report_export_to_html_aux(week)
-    #to implement
+    html_template = HTMLTemplate.new
+
+    html_body = html_template.body.split("\n")
+
+    counter = tr_position = 0
+    html_body.each do |line|
+      line = line.strip
+
+      if line == "</tr>"
+        tr_position = counter + 1
+      end
+
+      counter += 1
+    end
+
+    first_chunk = second_chunk = ""
+    html_body.each_slice(tr_position) do |slice|
+      if first_chunk.empty?
+        first_chunk = slice
+      else
+        second_chunk = slice
+      end
+    end
+
+    week.days.each do |day|
+      day.activities.each do |activity|
+        first_chunk.push("<tr>")
+        first_chunk.push("<td>")
+        first_chunk.push("test")
+        first_chunk.push("</td>")
+        first_chunk.push("</tr>")
+      end
+    end
+
+    html_body = first_chunk.concat(second_chunk)
+    html_body = html_body.join("\n")
+
+    html_result_string = html_template.header + html_body + html_template.footer
+
+    html_result_string
+  end
+
+  def write_html_file(string)
+    File.open("outputs/weekly_report.html", "w") { |f| f.write "#{string}" }
   end
 
 end

@@ -4,7 +4,7 @@ class CSVParser
 
   def initialize
     @file_name = "masterplan.csv"
-    @rows = 36
+    @rows = 37
     @cols = 15
   end
 
