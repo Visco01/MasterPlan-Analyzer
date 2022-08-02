@@ -115,17 +115,40 @@ class MasterPlan
       end
     end
 
+    first_chunk_template = first_chunk.clone
+    result_chunk = Array.new
+    day_counter = 0
+
     week.days.each do |day|
+
+      first_chunk = first_chunk_template.clone
+
+      begin
+        first_chunk[1]["Monday"] = @days[day_counter]
+      rescue IndexError
+        first_chunk[1][@days[day_counter - 1]] = @days[day_counter]
+      end
+
       day.activities.each do |activity|
         first_chunk.push("<tr>")
         first_chunk.push("<td>")
-        first_chunk.push("test")
+        first_chunk.push(week.timetables[0])
+        first_chunk.push("</td>")
+        first_chunk.push("<td>")
+        first_chunk.push(activity)
+        first_chunk.push("</td>")
+        first_chunk.push("<td>")
+        first_chunk.push(day.checks[5])
         first_chunk.push("</td>")
         first_chunk.push("</tr>")
       end
+
+      puts "#{first_chunk[1]}"
+      day_counter += 1
+      result_chunk += first_chunk
     end
 
-    html_body = first_chunk.concat(second_chunk)
+    html_body = result_chunk.concat(second_chunk)
     html_body = html_body.join("\n")
 
     html_result_string = html_template.header + html_body + html_template.footer
