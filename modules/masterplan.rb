@@ -89,54 +89,37 @@ class MasterPlan
 
   private
 
+  def write_table(day, week, iter)
+    s = String.new
+    day.activities.each do |activity|
+      s.concat '<tr>'
+      s.concat "<td class=\"text-left\">#{week.timetables.at(iter)}</td>"
+      s.concat "<td class=\"text-left\">#{activity}</td>"
+      s.concat "<td class=\"text-left\">#{day.checks.at(iter)}</td>"
+      s.concat '</tr>'
+    end
+    s
+  end
+
   def weekly_report_export_to_html_aux(week)
     html_template = HTMLTemplate.new
-    first_chunk = second_chunk = ''
-    counter = tr_position = 0
-    result_chunk = []
+    result = []
 
-    html_body = html_template.body.split(/\n/)
+    body = html_template.body
 
-    html_body.each_with_index { |line, i| line.strip!; tr_position = i + 1 if line == '</tr>'}
+    # Modify html staff
+    week.days.each_with_index do |day, i|
+      tmp = body.clone
+      tmp&.gsub!(/>\s\w+</, "> #{@days.at(i)}<")
+      tmp&.gsub!(/sec-./, "sec-#{i + 1}")
+      tmp&.gsub!(/>\d</, ">#{i + 1}<")
+      result << tmp
 
-    html_body.each_slice(tr_position) { |slice| first_chunk.empty? ? first_chunk = slice : second_chunk = slice}
-
-    first_chunk_template = first_chunk.clone
-
-
-    week.days.each_with_index do |day, day_counter|
-      first_chunk = first_chunk_template.clone
-
-      first_chunk[1] = first_chunk_template[1]&.gsub(/Monday/, @days.at(day_counter).to_s)
-      #first_chunk[1]&.gsub!(/>\s\w+</, '> ' + @days.at(day_counter).to_s + '<')
-      first_chunk[1]&.gsub!(/sec-./, 'sec-' + (day_counter + 1).to_s)
-      first_chunk[1]&.gsub!(/>\d</, '>' + (day_counter + 1).to_s + '<')
-
-      day.activities.each do |activity|
-        first_chunk.push('<tr>')
-        first_chunk.push('<td>')
-        first_chunk.push(week.timetables[0])
-        first_chunk.push('</td>')
-        first_chunk.push('<td>')
-        first_chunk.push(activity)
-        first_chunk.push('</td>')
-        first_chunk.push('<td>')
-        first_chunk.push(day.checks[5])
-        first_chunk.push('</td>')
-        first_chunk.push('</tr>')
-      end
-
-      #      puts first_chunk[1].to_s
-      first_chunk += second_chunk
-      result_chunk += first_chunk
-      #p result_chunk[0..3]
-      #p day
+      result[i].gsub!(/<\/tr>/, "</tr>\n #{write_table(day, week, i)}")
     end
+    body = result.join("\n")
 
-    html_body = result_chunk
-    html_body = html_body.join("\n")
-
-    html_result_string = html_template.header + html_body + html_template.footer
+    html_result_string = html_template.header + body + html_template.footer
     html_result_string
   end
 
