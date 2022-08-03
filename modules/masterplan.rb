@@ -126,14 +126,15 @@ class MasterPlan
         first_chunk.push('</tr>')
       end
 
-#      puts first_chunk[1].to_s
+      #      puts first_chunk[1].to_s
+      first_chunk += second_chunk
       result_chunk += first_chunk
       #p result_chunk[0..3]
       #p day
     end
 
-    html_body = result_chunk.concat(second_chunk)
-    html_body = html_body.join('\n')
+    html_body = result_chunk
+    html_body = html_body.join("\n")
 
     html_result_string = html_template.header + html_body + html_template.footer
     html_result_string
