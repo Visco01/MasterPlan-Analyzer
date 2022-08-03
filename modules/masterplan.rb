@@ -26,18 +26,19 @@ class MasterPlan
     calc_days_percentage(week)
     day_counter = 0
 
-    puts '\n           Weekly Report\n\n'
+    puts "\n           Weekly Report\n\n"
     puts '----------------------------------------'
     week.days.each do |day|
       puts "              #{@days[day_counter]}\n\n"
-      puts 'TIMETABLES     DONE          TASK\n'
+      puts "TIMETABLES     DONE          TASK\n"
 
       for i in 0..day.activities.length
         # next iteration if condition true!
-        next if day.activities[i].instance_of? (String) && !day.activities[i].empty?
+        next if !(day.activities[i].instance_of? String and not day.activities[i].empty?)
 
           day.checks[i] != 'V' ? check = 'X' : check = 'V';
           puts "   #{week.timetables[i]}         #{check}          #{day.activities[i]}"
+
       end
 
       puts "\nTASKS COMPLETED THIS DAY: #{week.percentages[day_counter]}%"
@@ -90,41 +91,26 @@ class MasterPlan
 
   def weekly_report_export_to_html_aux(week)
     html_template = HTMLTemplate.new
-
-    html_body = html_template.body.split('\n')
-
-    counter = tr_position = 0
-    html_body.each do |line|
-      line = line.strip
-
-      if line == '</tr>'
-        tr_position = counter + 1
-      end
-
-      counter += 1
-    end
-
     first_chunk = second_chunk = ''
-    html_body.each_slice(tr_position) do |slice|
-      if first_chunk.empty?
-        first_chunk = slice
-      else
-        second_chunk = slice
-      end
-    end
+    counter = tr_position = 0
+    result_chunk = []
+
+    html_body = html_template.body.split(/\n/)
+
+    html_body.each_with_index { |line, i| line.strip!; tr_position = i + 1 if line == '</tr>'}
+
+    html_body.each_slice(tr_position) { |slice| first_chunk.empty? ? first_chunk = slice : second_chunk = slice}
 
     first_chunk_template = first_chunk.clone
-    result_chunk = []
-    day_counter = 0
 
-    week.days.each do |day|
+
+    week.days.each_with_index do |day, day_counter|
       first_chunk = first_chunk_template.clone
 
-      begin
-        first_chunk[1]['Monday'] = @days[day_counter]
-      rescue IndexError
-        first_chunk[1][@days[day_counter - 1]] = @days[day_counter]
-      end
+      first_chunk[1] = first_chunk_template[1]&.gsub(/Monday/, @days.at(day_counter).to_s)
+      #first_chunk[1]&.gsub!(/>\s\w+</, '> ' + @days.at(day_counter).to_s + '<')
+      first_chunk[1]&.gsub!(/sec-./, 'sec-' + (day_counter + 1).to_s)
+      first_chunk[1]&.gsub!(/>\d</, '>' + (day_counter + 1).to_s + '<')
 
       day.activities.each do |activity|
         first_chunk.push('<tr>')
@@ -140,9 +126,10 @@ class MasterPlan
         first_chunk.push('</tr>')
       end
 
-      puts first_chunk[1].to_s
-      day_counter += 1
+#      puts first_chunk[1].to_s
       result_chunk += first_chunk
+      #p result_chunk[0..3]
+      #p day
     end
 
     html_body = result_chunk.concat(second_chunk)

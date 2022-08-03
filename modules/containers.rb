@@ -24,6 +24,6 @@ class WeekContainer
     @total_percentage = 0
 
     # initialize days size-1 times
-    (@size - 1).times { |i| @days[i] = DayContainer.new }
+    @size.times { |i| @days[i] = DayContainer.new }
   end
 end
