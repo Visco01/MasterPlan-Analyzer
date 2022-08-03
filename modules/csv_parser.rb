@@ -1,9 +1,12 @@
-require_relative "containers"
+#! /usr/bin/env ruby
+# frozen_string_literal: true
 
+require_relative 'containers'
+
+# CSVParser class
 class CSVParser
-
   def initialize
-    @file_name = "masterplan.csv"
+    @file_name = 'masterplan.csv'
     @rows = 37
     @cols = 15
   end
@@ -28,12 +31,12 @@ class CSVParser
     line.force_encoding('utf-8')
     splitted_line = line.split(';')
 
-    if splitted_line.any? and splitted_line[0] != splitted_line[-1]
+    if splitted_line.any? && splitted_line[0] != splitted_line[-1]
 
       last_element = splitted_line[-1]
 
-      if last_element == "\r\n"
-        splitted_line[-1] = ""
+      if last_element == '\r\n'
+        splitted_line[-1] = ''
       else
         splitted_line[-1] = last_element[0..-3]
       end
@@ -57,8 +60,7 @@ class CSVParser
     week = WeekContainer.new
 
     file.each do |line|
-
-      if file_counter >= total_lines - @rows + 1 and file_counter <= total_lines
+      if file_counter >= total_lines - @rows + 1 && file_counter <= total_lines
 
         splitted_line = prettify_line(line)
 
@@ -67,7 +69,7 @@ class CSVParser
 
         if splitted_line.length > 1
 
-          until i >= splitted_line.length - 1 do
+          until i >= splitted_line.length - 1
 
             week.timetables[line_counter] = splitted_line[0]
             week.days[day_counter].checks[line_counter] = splitted_line[i + 1]
@@ -82,7 +84,7 @@ class CSVParser
         end
 
         if week.timetables[line_counter].length == 4
-          week.timetables[line_counter] += " "
+          week.timetables[line_counter] += ' '
         end
 
         line_counter += 1
@@ -92,5 +94,4 @@ class CSVParser
 
     week
   end
-
 end

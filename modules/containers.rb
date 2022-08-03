@@ -1,3 +1,7 @@
+#! /usr/bin/env ruby
+# frozen_string_literal: true
+
+# Day container
 class DayContainer
   attr_accessor :activities, :checks
 
@@ -6,9 +10,9 @@ class DayContainer
     @checks = []
     @size = 35
   end
-
 end
 
+# Week container
 class WeekContainer
   attr_accessor :days, :timetables, :percentages, :total_percentage
 
@@ -19,9 +23,7 @@ class WeekContainer
     @size = 7
     @total_percentage = 0
 
-    for i in 0..@size - 1
-      @days[i] = DayContainer.new
-    end
+    # initialize days size-1 times
+    (@size - 1).times { |i| @days[i] = DayContainer.new }
   end
-
 end

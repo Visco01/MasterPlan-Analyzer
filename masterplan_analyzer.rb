@@ -1,5 +1,9 @@
-require_relative "./modules/masterplan.rb"
-require_relative "./modules/html_template.rb"
+#! /usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative './modules/masterplan'
+require_relative './modules/html_template'
+
 def main
   plan = MasterPlan.new
   plan.load_last_week
