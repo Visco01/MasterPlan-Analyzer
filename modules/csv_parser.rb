@@ -92,6 +92,8 @@ class CSVParser
       file_counter += 1
     end
 
+    week.calc_days_percentage
+
     week
   end
 end

@@ -22,8 +22,35 @@ class WeekContainer
     @timetables = []
     @size = 7
     @total_percentage = 0
+    @sentences = {
+      bad: "",
+      enough: "",
+      good: "",
+      very_good: ""
+    }
 
     # initialize days size-1 times
     @size.times { |i| @days[i] = DayContainer.new }
   end
+
+  def calc_days_percentage()
+    sum_percentages = 0
+
+    @days.each do |day|
+      n_checks = day.checks.count('V')
+      n_activities = day.activities.count - day.activities.count('')
+
+      begin
+        percentage = (100 * n_checks) / n_activities
+      rescue ZeroDivisionError
+        percentage = 0
+      end
+
+      @percentages.push(percentage)
+      sum_percentages += percentage
+    end
+
+    @total_percentage = sum_percentages / 7
+  end
+
 end

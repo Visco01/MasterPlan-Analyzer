@@ -50,28 +50,6 @@ class MasterPlan
     puts "\nTASKS COMPLETED THIS WEEK: #{week.total_percentage}%"
   end
 
-  def calc_days_percentage(week)
-    sum_percentages = 0
-
-    week.days.each do |day|
-      n_checks = day.checks.count('V')
-      null_activities = day.activities.count('')
-      total_activities = day.activities.count
-      n_activities = total_activities - null_activities
-
-      begin
-        percentage = (100 * n_checks) / n_activities
-      rescue ZeroDivisionError
-        percentage = 0
-      end
-
-      week.percentages.push(percentage)
-      sum_percentages += percentage
-    end
-
-    week.total_percentage = sum_percentages / 7
-  end
-
   def weekly_report_export_to_html
     week = @weeks[0]
 
@@ -89,13 +67,17 @@ class MasterPlan
 
   private
 
-  def write_table(day, week, iter)
+  def write_table(day, week)
     s = String.new
-    day.activities.each do |activity|
+    day.activities.each_with_index do |activity, index|
+
+      activity = '[No activity planned]' if activity.empty?
+      day.checks.at(index) == "V" ? check_id = "checked" : check_id = ""
+
       s.concat '<tr>'
-      s.concat "<td class=\"text-left\">#{week.timetables.at(iter)}</td>"
+      s.concat "<td class=\"text-left\">#{week.timetables.at(index)}</td>"
       s.concat "<td class=\"text-left\">#{activity}</td>"
-      s.concat "<td class=\"text-left\">#{day.checks.at(iter)}</td>"
+      s.concat "<td class=\"text-center\">\n<input class=\"form-check-input\" type=\"checkbox\" value=\"\" #{check_id} onclick=\"return false\" >\n</td>"
       s.concat '</tr>'
     end
     s
@@ -106,20 +88,24 @@ class MasterPlan
     result = []
 
     body = html_template.body
+    footer = html_template.footer
 
-    # Modify html staff
+    # Modify html stuff
     week.days.each_with_index do |day, i|
       tmp = body.clone
       tmp&.gsub!(/>\s\w+</, "> #{@days.at(i)}<")
       tmp&.gsub!(/sec-./, "sec-#{i + 1}")
       tmp&.gsub!(/>\d</, ">#{i + 1}<")
+      tmp&.gsub!(/completed:/, "completed: #{week.percentages.at(i)}%")
       result << tmp
 
-      result[i].gsub!(/<\/tr>/, "</tr>\n #{write_table(day, week, i)}")
+      result[i].gsub!(/<\/tr>/, "</tr>\n #{write_table(day, week)}")
     end
     body = result.join("\n")
 
-    html_result_string = html_template.header + body + html_template.footer
+    footer&.gsub!(/completed/, "completed #{week.total_percentage}%")
+
+    html_result_string = html_template.header + body + footer
     html_result_string
   end
 
