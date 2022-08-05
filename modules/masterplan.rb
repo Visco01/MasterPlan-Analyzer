@@ -2,9 +2,9 @@
 # frozen_string_literal: true
 
 require_relative 'csv_parser'
+require_relative 'containers'
 require_relative 'html_template'
 require 'test/unit/assertions'
-# require 'enumerator'
 
 # MasterPlan Class
 class MasterPlan
@@ -13,56 +13,50 @@ class MasterPlan
   def initialize
     @parser = CSVParser.new
     @weeks = []
-    @days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    @days = %w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday]
     @max_weeks = 12
   end
 
   def load_last_week
-    @weeks.push(@parser.get_last_week)
+    @weeks << @parser.get_last_week
+  end
+
+  def print_activities(day)
+    day.activities.length.times do |i|
+      next if day.activities[i].empty?
+
+      puts "   #{week.timetables[i]}         #{day.checks[i] != 'V' ? 'X' : 'V'}          #{day.activities[i]}"
+    end
+  end
+
+  def print_table(week)
+    week.days.each_with_index do |day, iter|
+      puts "              #{@days[iter]}\n\n"
+      puts "TIMETABLES     DONE          TASK\n"
+      print_activities(day)
+      puts "\nTASKS COMPLETED THIS DAY: #{week.percentages[iter]}%"
+      puts '----------------------------------------'
+    end
   end
 
   def print_last_week
     week = @weeks[0]
-    calc_days_percentage(week)
-    day_counter = 0
-
+    week.calc_days_percentage
     puts "\n           Weekly Report\n\n"
     puts '----------------------------------------'
-    week.days.each do |day|
-      puts "              #{@days[day_counter]}\n\n"
-      puts "TIMETABLES     DONE          TASK\n"
-
-      for i in 0..day.activities.length
-        # next iteration if condition true!
-        next if !(day.activities[i].instance_of? String and not day.activities[i].empty?)
-
-          day.checks[i] != 'V' ? check = 'X' : check = 'V';
-          puts "   #{week.timetables[i]}         #{check}          #{day.activities[i]}"
-
-      end
-
-      puts "\nTASKS COMPLETED THIS DAY: #{week.percentages[day_counter]}%"
-
-      puts '----------------------------------------'
-      day_counter += 1
-    end
-
+    print_table(week.days)
     puts "\nTASKS COMPLETED THIS WEEK: #{week.total_percentage}%"
   end
 
   def weekly_report_export_to_html
     week = @weeks[0]
-
     begin
       assert(!week.nil?, 'weekly_report_export_to_html: week object is nil. firstly you need to call load method')
     rescue Test::Unit::AssertionFailedError => e
       puts e.message.to_s
       exit(false)
     end
-
-    html_string = weekly_report_export_to_html_aux(week)
-
-    write_html_file(html_string)
+    write_html_file(weekly_report_export_to_html_aux(week))
   end
 
   private
@@ -70,43 +64,38 @@ class MasterPlan
   def write_table(day, week)
     s = String.new
     day.activities.each_with_index do |activity, index|
-
       activity = '[No activity planned]' if activity.empty?
-      day.checks.at(index) == "V" ? check_id = "checked" : check_id = ""
-
-      s.concat '<tr>'
-      s.concat "<td class=\"text-left\">#{week.timetables.at(index)}</td>"
+      s.concat "<tr>\n<td class=\"text-left\">#{week.timetables.at(index)}</td>"
       s.concat "<td class=\"text-left\">#{activity}</td>"
-      s.concat "<td class=\"text-center\">\n<input class=\"form-check-input\" type=\"checkbox\" value=\"\" #{check_id} onclick=\"return false\" >\n</td>"
-      s.concat '</tr>'
+      s.concat "<td class=\"text-center\">\n<input class=\"form-check-input\" type=\"checkbox\" value=\"\" "
+      s.concat "#{day.checks.at(index) == 'V' ? 'checked' : ''} onclick=\"return false\" >\n</td></tr>"
     end
     s
   end
 
-  def weekly_report_export_to_html_aux(week)
-    html_template = HTMLTemplate.new
+  def set_day(body, week, day, iter)
+    body&.gsub!(/>\s\w+</, "> #{@days.at(iter)}<")
+    body&.gsub!(/sec-./, "sec-#{iter + 1}")
+    body&.gsub!(/>\d</, ">#{iter + 1}<")
+    body&.gsub!(/completed:/, "completed: #{week.percentages.at(iter)}%")
+    body&.gsub!(%r{</tr>}, "</tr>\n #{write_table(day, week)}")
+  end
+
+  def update_html(week, body)
     result = []
-
-    body = html_template.body
-    footer = html_template.footer
-
-    # Modify html stuff
     week.days.each_with_index do |day, i|
       tmp = body.clone
-      tmp&.gsub!(/>\s\w+</, "> #{@days.at(i)}<")
-      tmp&.gsub!(/sec-./, "sec-#{i + 1}")
-      tmp&.gsub!(/>\d</, ">#{i + 1}<")
-      tmp&.gsub!(/completed:/, "completed: #{week.percentages.at(i)}%")
+      set_day(tmp, week, day, i)
       result << tmp
-
-      result[i].gsub!(/<\/tr>/, "</tr>\n #{write_table(day, week)}")
     end
-    body = result.join("\n")
+    result
+  end
 
-    footer&.gsub!(/completed/, "completed #{week.total_percentage}%")
-
-    html_result_string = html_template.header + body + footer
-    html_result_string
+  def weekly_report_export_to_html_aux(week)
+    html_template = HTMLTemplate.new
+    body = update_html(week, html_template.body).join("\n")
+    footer = html_template.footer.clone&.gsub!(/completed/, "completed #{week.total_percentage}%")
+    html_template.header + body + footer
   end
 
   def write_html_file(string)

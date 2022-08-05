@@ -23,17 +23,17 @@ class WeekContainer
     @size = 7
     @total_percentage = 0
     @sentences = {
-      bad: "",
-      enough: "",
-      good: "",
-      very_good: ""
+      bad: '',
+      enough: '',
+      good: '',
+      very_good: ''
     }
 
     # initialize days size-1 times
     @size.times { |i| @days[i] = DayContainer.new }
   end
 
-  def calc_days_percentage()
+  def calc_days_percentage
     sum_percentages = 0
 
     @days.each do |day|
@@ -52,5 +52,4 @@ class WeekContainer
 
     @total_percentage = sum_percentages / 7
   end
-
 end
