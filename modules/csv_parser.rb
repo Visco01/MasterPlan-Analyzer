@@ -11,89 +11,42 @@ class CSVParser
     @cols = 15
   end
 
-  def get_total_lines
+  def empty_line(week)
+    7.times do |i|
+      week.days[i].checks << 'X'
+      week.days[i].activities << 'none'
+    end
+  end
+
+  def update_content(body, week)
+    day_counter = 0
+    body.length.times do |i|
+      week.days[day_counter].checks << body[i] if i.even?
+      week.days[day_counter].activities << body[i] if i.odd?
+      day_counter += 1 if i.odd?
+    end
+  end
+
+  def fill_week(arr, week)
+    arr.each_with_index do |line, i|
+      next if i.zero?
+
+      week.timetables << line[0]
+      line.size == 1 ? empty_line(week) : update_content(line[1..], week)
+    end
+  end
+
+  def last_week?
     begin
-      file = File.open(@file_name)
-    rescue
+      # return the last 37 lines of the file
+      file = `tail -n 37 masterplan.csv`.split(/\r\n/).map { |line| line.split(';') }
+    rescue ENOENT
       puts "File #{@file_name} not found."
       exit(false)
     end
-
-    counter = 0
-    file.each do |line|
-      counter += 1
-    end
-
-    counter
-  end
-
-  def prettify_line(line)
-    line.force_encoding('utf-8')
-    splitted_line = line.split(';')
-
-    if splitted_line.any? && splitted_line[0] != splitted_line[-1]
-
-      last_element = splitted_line[-1]
-
-      if last_element == '\r\n'
-        splitted_line[-1] = ''
-      else
-        splitted_line[-1] = last_element[0..-3]
-      end
-    end
-
-    splitted_line
-  end
-
-  def get_last_week
-    begin
-      file = File.open(@file_name)
-    rescue
-      puts "File #{@file_name} not found."
-      exit(false)
-    end
-
-    total_lines = get_total_lines
-    file_counter = 0
-    line_counter = 0
-
     week = WeekContainer.new
-
-    file.each do |line|
-      if file_counter >= total_lines - @rows + 1 && file_counter <= total_lines
-
-        splitted_line = prettify_line(line)
-
-        day_counter = 0
-        i = 0
-
-        if splitted_line.length > 1
-
-          until i >= splitted_line.length - 1
-
-            week.timetables[line_counter] = splitted_line[0]
-            week.days[day_counter].checks[line_counter] = splitted_line[i + 1]
-            week.days[day_counter].activities[line_counter] = splitted_line[i + 2]
-
-            day_counter += 1
-            i += 2
-          end
-
-        else
-          week.timetables[line_counter] = splitted_line[0]
-        end
-
-        if week.timetables[line_counter].length == 4
-          week.timetables[line_counter] += ' '
-        end
-
-        line_counter += 1
-      end
-      file_counter += 1
-    end
-
+    fill_week(file, week)
     week.calc_days_percentage
-
     week
   end
 end

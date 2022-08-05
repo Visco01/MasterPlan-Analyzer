@@ -18,14 +18,14 @@ class MasterPlan
   end
 
   def load_last_week
-    @weeks << @parser.get_last_week
+    @weeks << @parser.last_week?
   end
 
   def print_activities(day)
     day.activities.length.times do |i|
       next if day.activities[i].empty?
 
-      puts "   #{week.timetables[i]}         #{day.checks[i] != 'V' ? 'X' : 'V'}          #{day.activities[i]}"
+      puts "\t#{week.timetables[i]}\t#{day.checks[i] != 'V' ? 'X' : 'V'}\t#{day.activities[i]}"
     end
   end
 
@@ -64,7 +64,7 @@ class MasterPlan
   def write_table(day, week)
     s = String.new
     day.activities.each_with_index do |activity, index|
-      activity = '[No activity planned]' if activity.empty?
+      activity = '[No activity planned]' if activity.nil?
       s.concat "<tr>\n<td class=\"text-left\">#{week.timetables.at(index)}</td>"
       s.concat "<td class=\"text-left\">#{activity}</td>"
       s.concat "<td class=\"text-center\">\n<input class=\"form-check-input\" type=\"checkbox\" value=\"\" "

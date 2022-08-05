@@ -12,7 +12,7 @@ class HTMLTemplate
       header_data = File.open('./resources/header_template.html')
       body_data = File.open('./resources/body_template.html')
       footer_data = File.open('./resources/footer_template.html')
-    rescue
+    rescue ENOENT
       puts 'File not found!!'
       exit(false)
     end
