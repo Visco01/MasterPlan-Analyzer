@@ -21,24 +21,6 @@ class MasterPlan
     @weeks << @parser.last_week?
   end
 
-  def print_activities(day)
-    day.activities.length.times do |i|
-      next if day.activities[i].empty?
-
-      puts "\t#{week.timetables[i]}\t#{day.checks[i] != 'V' ? 'X' : 'V'}\t#{day.activities[i]}"
-    end
-  end
-
-  def print_table(week)
-    week.days.each_with_index do |day, iter|
-      puts "              #{@days[iter]}\n\n"
-      puts "TIMETABLES     DONE          TASK\n"
-      print_activities(day)
-      puts "\nTASKS COMPLETED THIS DAY: #{week.percentages[iter]}%"
-      puts '----------------------------------------'
-    end
-  end
-
   def print_last_week
     week = @weeks[0]
     week.calc_days_percentage
@@ -60,6 +42,34 @@ class MasterPlan
   end
 
   private
+
+  def print_activities(day)
+    day.activities.length.times do |i|
+      next if day.activities[i].empty?
+
+      puts "\t#{week.timetables[i]}\t#{day.checks[i] != 'V' ? 'X' : 'V'}\t#{day.activities[i]}"
+    end
+  end
+
+  def print_table(week)
+    week.days.each_with_index do |day, iter|
+      puts "              #{@days[iter]}\n\n"
+      puts "TIMETABLES     DONE          TASK\n"
+      print_activities(day)
+      puts "\nTASKS COMPLETED THIS DAY: #{week.percentages[iter]}%"
+      puts '----------------------------------------'
+    end
+  end
+
+  def get_final_sentence(week)
+    result = String.new
+    result << "#{week.total_percentage}% of your tasks! "
+    result << week.sentences[:very_good] if week.total_percentage.between?(75, 100)
+    result << week.sentences[:good] if week.total_percentage.between?(50, 74)
+    result << week.sentences[:enough] if week.total_percentage.between?(25, 49)
+    result << week.sentences[:very_good] if week.total_percentage.between?(0, 24)
+    result
+  end
 
   def write_table(day, week)
     s = String.new
@@ -94,7 +104,7 @@ class MasterPlan
   def weekly_report_export_to_html_aux(week)
     html_template = HTMLTemplate.new
     body = update_html(week, html_template.body).join("\n")
-    footer = html_template.footer.clone&.gsub!(/completed/, "completed #{week.total_percentage}%")
+    footer = html_template.footer.clone&.gsub!(/completed/, "completed #{get_final_sentence(week)}")
     html_template.header + body + footer
   end
 
