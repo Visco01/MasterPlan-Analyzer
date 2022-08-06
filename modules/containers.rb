@@ -14,7 +14,7 @@ end
 
 # Week container
 class WeekContainer
-  attr_accessor :days, :timetables, :percentages, :total_percentage
+  attr_accessor :days, :timetables, :percentages, :total_percentage, :sentences
 
   def initialize
     @days = []
@@ -23,10 +23,10 @@ class WeekContainer
     @size = 7
     @total_percentage = 0
     @sentences = {
-      bad: '',
-      enough: '',
-      good: '',
-      very_good: ''
+      bad: 'So why do you use the masterplan?',
+      enough: 'You are a good planner, but you should start respecting these plans!',
+      good: 'You could still improve!',
+      very_good: 'You are the perfect planner!'
     }
 
     # initialize days size-1 times
@@ -38,7 +38,7 @@ class WeekContainer
 
     @days.each do |day|
       n_checks = day.checks.count('V')
-      n_activities = day.activities.count - day.activities.count('')
+      n_activities = day.activities.count - day.activities.count('none')
 
       begin
         percentage = (100 * n_checks) / n_activities
