@@ -39,8 +39,8 @@ class CSVParser
   def last_week?
     begin
       # return the last [@rows] lines of the file
-      file = `tail -n #{@rows} masterplan.csv`.split(/\r\n/).map { |line| line.split(';') }
-    rescue ENOENT
+      file = `tail -n #{@rows} #{@file_name}`.split(/\r\n/).map { |line| line.split(';') }
+    rescue Errno::ENOENT
       puts "File #{@file_name} not found."
       exit(false)
     end

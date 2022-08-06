@@ -61,24 +61,35 @@ class MasterPlan
     end
   end
 
+  def decide_status(percentage, sentences)
+    case percentage
+    when 75..100
+      sentences[:very_good]
+    when 50..74
+      sentences[:good]
+    when 25..49
+      sentences[:enough]
+    when 0..24
+      sentences[:bad]
+    when String
+      p 'Hey, I can not accept a string'
+    else
+      p "#{percentage}! really? is this a real percentage!?"
+    end
+  end
+
   def get_final_sentence(week)
-    result = String.new
-    result << "#{week.total_percentage}% of your tasks! "
-    result << week.sentences[:very_good] if week.total_percentage.between?(75, 100)
-    result << week.sentences[:good] if week.total_percentage.between?(50, 74)
-    result << week.sentences[:enough] if week.total_percentage.between?(25, 49)
-    result << week.sentences[:very_good] if week.total_percentage.between?(0, 24)
-    result
+    "#{week.total_percentage}% of your tasks! #{decide_status(week.total_percentage, week.sentences)}"
   end
 
   def write_table(day, week)
     s = String.new
     day.activities.each_with_index do |activity, index|
       activity = '[No activity planned]' if activity.nil?
-      s.concat "<tr>\n<td class=\"text-left\">#{week.timetables.at(index)}</td>"
-      s.concat "<td class=\"text-left\">#{activity}</td>"
-      s.concat "<td class=\"text-center\">\n<input class=\"form-check-input\" type=\"checkbox\" value=\"\" "
-      s.concat "#{day.checks.at(index) == 'V' ? 'checked' : ''} onclick=\"return false\" >\n</td></tr>"
+      s.concat "\t<tr>\n\t  <td class=\"text-left\">#{week.timetables.at(index)}</td>\n"
+      s.concat "\t  <td class=\"text-left\">#{activity}</td>\n"
+      s.concat "\t  <td class=\"text-center\">\n\t    <input class=\"form-check-input\" type=\"checkbox\" value=\"\""
+      s.concat "#{day.checks.at(index) == 'V' ? 'checked' : ''} onclick=\"return false\">\n\t  </td>\n\t</tr>\n"
     end
     s
   end
@@ -109,6 +120,7 @@ class MasterPlan
   end
 
   def write_html_file(string)
+    Dir.mkdir('outputs') unless Dir.exist?('outputs')
     File.open('outputs/weekly_report.html', 'w') { |f| f.write string.to_s }
   end
 end
