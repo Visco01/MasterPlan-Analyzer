@@ -1,16 +1,18 @@
 #! /usr/bin/env ruby
 # frozen_string_literal: true
 
+require_relative 'settings_manager'
 require_relative 'csv_parser'
 require_relative 'containers'
 require_relative 'html_template'
 require 'test/unit/assertions'
 
 # MasterPlan Class
-class MasterPlan
+class MasterPlan < SettingsManager
   include Test::Unit::Assertions
 
   def initialize
+    super
     @parser = CSVParser.new
     @weeks = []
     @days = %w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday]
