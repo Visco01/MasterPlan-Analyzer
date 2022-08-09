@@ -1,8 +1,13 @@
 *.csv
 *.numbers
+report/
+report/*
 outputs/
+outputs/*
 settings/
 settings/*
+masterplan/
+masterplan/*
 
 # Backup files
 *~

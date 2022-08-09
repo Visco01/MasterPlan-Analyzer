@@ -16,20 +16,14 @@ end
 class WeekContainer
   attr_accessor :days, :timetables, :percentages, :total_percentage, :sentences
 
-  def initialize
+  def initialize(sentence)
     @days = []
     @percentages = []
     @timetables = []
     @size = 7
     @total_percentage = 0
-    @sentences = {
-      bad: 'So why do you use the masterplan?',
-      enough: 'You are a good planner, but you should start respecting these plans!',
-      good: 'You could still improve!',
-      very_good: 'You are the perfect planner!'
-    }
-
-    # initialize days size-1 times
+    @sentences = sentence
+    p @sentences
     @size.times { |i| @days[i] = DayContainer.new }
   end
 

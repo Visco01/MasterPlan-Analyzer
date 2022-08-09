@@ -16,7 +16,14 @@ class MasterPlan < SettingsManager
     @parser = CSVParser.new
     @weeks = []
     @days = %w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday]
-    @max_weeks = 12
+    @max_weeks = @lamb_hash[:get_week].call
+    disable_days
+  end
+
+  def disable_days
+    @days.each do |day|
+      @days.delete(day) unless @lamb_hash[:get_day].call(day)
+    end
   end
 
   def load_last_week
