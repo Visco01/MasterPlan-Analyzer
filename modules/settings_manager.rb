@@ -47,7 +47,8 @@ class SettingsManager
   end
 
   def setup_settings_file
-    File.write("./#{@dir_name}/#{@file_name}", DEFAULT_SETTINGS) unless File.exist?("./#{@dir_name}/#{@file_name}")
+    lamb_write = -> { YAML.safe_load(DEFAULT_SETTINGS, symbolize_names: true).to_yaml }
+    File.write("./#{@dir_name}/#{@file_name}", lamb_write.call) unless File.exist?("./#{@dir_name}/#{@file_name}")
 
     begin
       File.open("./#{@dir_name}/#{@file_name}", 'r') { |f| @current_settings = YAML.load_stream(f, symbolize_names: true)}
