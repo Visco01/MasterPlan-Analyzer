@@ -14,16 +14,11 @@ class MasterPlan < SettingsManager
   def initialize
     super
     @parser = CSVParser.new
+    @export_dir = (Dir.pwd + @lamb_hash[:get_export_dir].call)
     @weeks = []
     @days = %w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday]
     @max_weeks = @lamb_hash[:get_week].call
     disable_days
-  end
-
-  def disable_days
-    @days.each do |day|
-      @days.delete(day) unless @lamb_hash[:get_day].call(day)
-    end
   end
 
   def load_last_week
@@ -51,6 +46,12 @@ class MasterPlan < SettingsManager
   end
 
   private
+
+  def disable_days
+    @days.each do |day|
+      @days.delete(day) unless @lamb_hash[:get_day].call(day)
+    end
+  end
 
   def print_activities(day)
     day.activities.length.times do |i|
@@ -129,7 +130,7 @@ class MasterPlan < SettingsManager
   end
 
   def write_html_file(string)
-    Dir.mkdir('outputs') unless Dir.exist?('outputs')
-    File.open('outputs/weekly_report.html', 'w') { |f| f.write string.to_s }
+    FileUtils.mkdir_p(@export_dir) unless Dir.exist?(@export_dir)
+    File.open("#{@export_dir}/weekly_report.html", 'w') { |f| f.write string.to_s }
   end
 end

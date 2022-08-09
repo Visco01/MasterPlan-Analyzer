@@ -22,8 +22,8 @@ class SettingsManager
           sunday: On
         max_weeks: 12
       paths:
-        out_report: /report
-        masterplan: /masterplan
+        out_directory: /report
+        masterplan: /masterplan/masterplan.csv
         settings: /settings/settings.yml
       customizations:
         sentences:
@@ -42,12 +42,9 @@ class SettingsManager
 
     yaml_lamb_utility
     bootstrap_config
-
-    # k = %w[mon tue wed thu fri sat sun]
-    # s = %w[bad enough good very_good]
-
-    # @lamb_hash = fill_hashs(k)
   end
+
+  private
 
   def bootstrap_config
     setup_settings_dir unless Dir.exist?(@settings_path)
@@ -57,76 +54,46 @@ class SettingsManager
     settings_lamb_utility
   end
 
-  def create_lamb_days
-    l_get_mon = ->(m) { @current_settings[:settings][:date][:days][m.downcase.to_sym] }
-    @lamb_hash.store(:get_day, l_get_mon)
+  def lamb_builder_file_system_operations(operation, command)
+    case operation
+    when 'write'
+      lamb_operation = -> { YAML.safe_load(DEFAULT_SETTINGS, symbolize_names: true).to_yaml }
+    when 'read'
+      lamb_operation = ->(f) { YAML.load_stream(f, symbolize_names: true) }
+    when 'open'
+      lamb_operation = ->(p) { File.open(p, 'r') { |f| @lamb_hash[:yaml_read].call(f) } }
+    when 'copy'
+      lamb_operation = ->(x, y) { FileUtils.copy_file(x, y) }
+    end
+    @lamb_hash.store(command.to_sym, lamb_operation)
   end
 
-  def create_lamb_weeks
-    l_get_weeks = -> { @current_settings[:settings][:date][:max_weeks] }
-    @lamb_hash.store(:get_week, l_get_weeks)
-  end
-
-  def create_lamb_report
-    l_get_report = -> { @current_settings[:settings][:paths][:out_report] }
-    @lamb_hash.store(:get_report, l_get_report)
-  end
-
-  def create_lamb_masterplan
-    l_get_masterplan = -> { @current_settings[:settings][:paths][:masterplan] }
-    @lamb_hash.store(:get_masterplan, l_get_masterplan)
-  end
-
-  def create_lamb_settings
-    l_get_settings = -> { @current_settings[:settings][:paths][:settings] }
-    @lamb_hash.store(:get_settings, l_get_settings)
-  end
-
-  def create_lamb_sentence
-    l_get_sentence = ->(s) { @current_settings[:settings][:customizations][:sentences][s.to_sym] }
-    @lamb_hash.store(:get_sentence, l_get_sentence)
-  end
-
-  def create_lamb_tot_sentences
-    l_get_total_sentences = -> { @current_settings[:settings][:customizations][:sentences] }
-    @lamb_hash.store(:get_tot_sentences, l_get_total_sentences)
-  end
-
-  def create_lamb_yaml_write
-    lamb_write = -> { YAML.safe_load(DEFAULT_SETTINGS, symbolize_names: true).to_yaml }
-    @lamb_hash.store(:yaml_write, lamb_write)
-  end
-
-  def create_lamb_yaml_read
-    lamb_read = ->(f) { YAML.load_stream(f, symbolize_names: true) }
-    @lamb_hash.store(:yaml_read, lamb_read)
-  end
-
-  def create_lamb_yaml_open
-    lamb_open = ->(p) { File.open(p, 'r') { |f| @lamb_hash[:yaml_read].call(f) } }
-    @lamb_hash.store(:yaml_open, lamb_open)
-  end
-
-  def create_lamb_yaml_copy
-    lamb_copy = ->(x, y) { FileUtils.copy_file(x, y) }
-    @lamb_hash.store(:yaml_copy, lamb_copy)
+  def lamb_builder_from_current_settings(command, *hash_values)
+    case hash_values.count
+    when 2
+      get_settings = ->() { @current_settings[:settings][hash_values[0].to_sym][hash_values[1].to_sym]}
+    when 3
+      get_settings = ->(s) { @current_settings[:settings][hash_values[0].to_sym][hash_values[1].to_sym][s.downcase.to_sym]}
+    end
+    @lamb_hash.store(command.to_sym, get_settings)
   end
 
   def yaml_lamb_utility
-    create_lamb_yaml_write
-    create_lamb_yaml_read
-    create_lamb_yaml_open
-    create_lamb_yaml_copy
+    lamb_builder_file_system_operations('write', 'yaml_write')
+    lamb_builder_file_system_operations('read', 'yaml_read')
+    lamb_builder_file_system_operations('open', 'yaml_open')
+    lamb_builder_file_system_operations('copy', 'yaml_copy')
+    @lamb_hash.rehash
   end
 
   def settings_lamb_utility
-    create_lamb_days
-    create_lamb_weeks
-    create_lamb_report
-    create_lamb_masterplan
-    create_lamb_settings
-    create_lamb_sentence
-    create_lamb_tot_sentences
+    lamb_builder_from_current_settings('get_day', 'date', 'days', true)
+    lamb_builder_from_current_settings('get_week', 'date', 'max_weeks')
+    lamb_builder_from_current_settings('get_export_dir', 'paths', 'out_directory')
+    lamb_builder_from_current_settings('get_masterplan', 'paths', 'masterplan')
+    lamb_builder_from_current_settings('get_settings', 'paths', 'settings')
+    lamb_builder_from_current_settings('get_sentence', 'customizations', 'sentences', true)
+    lamb_builder_from_current_settings('get_tot_sentences', 'customizations', 'sentences')
     @lamb_hash.rehash
   end
 

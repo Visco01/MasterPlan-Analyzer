@@ -23,7 +23,6 @@ class WeekContainer
     @size = 7
     @total_percentage = 0
     @sentences = sentence
-    p @sentences
     @size.times { |i| @days[i] = DayContainer.new }
   end
 

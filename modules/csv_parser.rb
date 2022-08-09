@@ -61,12 +61,12 @@ class CSVParser < SettingsManager
   end
 
   def setup_csv_file
-    File.write(@csv_name, CSV.parse(CSV_TEMPLATE, headers: true))
+    File.write(@csv_name, CSV.parse(CSV_TEMPLATE, headers: true)) 
   end
 
   def bootstrap_csv
-    setup_csv_dir
-    setup_csv_file
+    setup_csv_dir unless Dir.exist?(File.dirname(@csv_name))
+    setup_csv_file unless File.exist?(@csv_name)
   end
 
   def empty_line(week)
