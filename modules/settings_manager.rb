@@ -8,7 +8,7 @@ require 'yaml'
 class SettingsManager
   attr_reader :dir_name, :file_name
 
-  DEFAULT_PREFERENCES = <<~PREFERENCES
+  DEFAULT_SETTINGS = <<~PREFERENCES
     ---
     settings:
       date:
@@ -33,37 +33,45 @@ class SettingsManager
   PREFERENCES
 
   def initialize
-    @dir_name = 'preferences'
+    @dir_name = 'settings'
     @file_name = 'settings.yml'
-    setup_dir
-    setup_file
-    load_settings
+    @backup_file_name = '.backup_settings.yml'
+    @current_settings = []
+
+    setup_settings_dir
+    setup_settings_file
   end
 
-  def setup_dir
+  def setup_settings_dir
     FileUtils.mkdir_p(@dir_name) unless Dir.exist?(@dir_name)
   end
 
-  def setup_file
-    lamb_write = -> { YAML.safe_load(DEFAULT_PREFERENCES, symbolize_names: true).to_yaml }
-    File.write("./#{@dir_name}/#{@file_name}", lamb_write.call) unless File.exist?("./#{@dir_name}/#{@file_name}")
-  end
+  def setup_settings_file
+    File.write("./#{@dir_name}/#{@file_name}", DEFAULT_SETTINGS) unless File.exist?("./#{@dir_name}/#{@file_name}")
 
-  def load_settings
-    docs = []
     begin
-      File.open("./#{@dir_name}/#{@file_name}", 'r') { |f| docs = YAML.load_stream(f, symbolize_names: true) }
+      File.open("./#{@dir_name}/#{@file_name}", 'r') { |f| @current_settings = YAML.load_stream(f, symbolize_names: true)}
+      write_settings_file("./#{@dir_name}/#{@backup_file_name}", @current_settings)
     rescue Psych::SyntaxError
-      p 'Hey buddy, SyntaxError in settings file (/preferences/settings.yml)'
+      p "SyntaxError in settings file (/#{@dir_name}/#{@file_name})"
       reset_settings
-      p 'You are lucky, already fixed!! XD'
+      p 'Settings restored to last working configuration.'
       exit(1)
     end
-    docs
+  end
+
+  def write_settings_file(file_path, content)
+    File.open(file_path, 'w') { |f| f.write(content.to_yaml) }
   end
 
   def reset_settings
-    lamb_write = -> { YAML.safe_load(DEFAULT_PREFERENCES, symbolize_names: true).to_yaml }
-    File.open("./#{@dir_name}/#{@file_name}", 'w') { |f| f.write(lamb_write.call) }
+    last_working_settings = []
+    begin
+      File.open("./#{@dir_name}/#{@backup_file_name}", 'r') { |f| last_working_settings = YAML.load_stream(f, symbolize_names: true).to_yaml}
+    rescue Psych::SyntaxError
+      last_working_settings = DEFAULT_SETTINGS
+    end
+
+    File.open("./#{@dir_name}/#{@file_name}", 'w') { |f| f.write(last_working_settings) }
   end
 end
