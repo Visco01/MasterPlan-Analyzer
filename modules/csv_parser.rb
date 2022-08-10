@@ -3,49 +3,11 @@
 
 require_relative 'containers'
 require_relative 'settings_manager'
+require_relative 'templates.rb'
 require 'csv'
 
 # CSVParser class
 class CSVParser < SettingsManager
-  CSV_TEMPLATE = <<~TEMPLATE
-    ;;Monday;;Tuesday;;Wednesday;;Thursday;;Friday;;Saturday;;Sunday
-    6.30;;;;;;;;;;;;;;
-    7.00;;;;;;;;;;;;;;
-    7.30;;;;;;;;;;;;;;
-    8.00;;;;;;;;;;;;;;
-    8.30;;;;;;;;;;;;;;
-    9.00;;;;;;;;;;;;;;
-    9.30;;;;;;;;;;;;;;
-    10.00;;;;;;;;;;;;;;
-    10.30;;;;;;;;;;;;;;
-    11.00;;;;;;;;;;;;;;
-    11.30;;;;;;;;;;;;;;
-    12.00;;;;;;;;;;;;;;
-    12.30;;;;;;;;;;;;;;
-    13.00;;;;;;;;;;;;;;
-    13.30;;;;;;;;;;;;;;
-    14.00;;;;;;;;;;;;;;
-    14.30;;;;;;;;;;;;;;
-    15.00;;;;;;;;;;;;;;
-    15.30;;;;;;;;;;;;;;
-    16.00;;;;;;;;;;;;;;
-    16.30;;;;;;;;;;;;;;
-    17.00;;;;;;;;;;;;;;
-    17.30;;;;;;;;;;;;;;
-    18.00;;;;;;;;;;;;;;
-    18.30;;;;;;;;;;;;;;
-    19.00;;;;;;;;;;;;;;
-    19.30;;;;;;;;;;;;;;
-    20.00;;;;;;;;;;;;;;
-    20.30;;;;;;;;;;;;;;
-    21.00;;;;;;;;;;;;;;
-    21.30;;;;;;;;;;;;;;
-    22.00;;;;;;;;;;;;;;
-    22.30;;;;;;;;;;;;;;
-    23.00;;;;;;;;;;;;;;
-    23.30;;;;;;;;;;;;;;
-    00.00;;;;;;;;;;;;;;
-  TEMPLATE
 
   def initialize
     super
@@ -61,7 +23,7 @@ class CSVParser < SettingsManager
   end
 
   def setup_csv_file
-    File.write(@csv_name, CSV.parse(CSV_TEMPLATE, headers: true)) 
+    File.write(@csv_name, CSV.parse(Templates.get_csv_template, headers: true)) 
   end
 
   def bootstrap_csv
